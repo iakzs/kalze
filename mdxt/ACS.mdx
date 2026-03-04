@@ -1,0 +1,67 @@
+---
+title: 'AntiCheatSimulator'
+date: '2026-03-04'
+excerpt: 'how im using c# to test mc anti-cheats'
+---
+
+# most servers pay for an anti-cheat, not knowing how to fix them is a huge problem.
+
+i've been using c# to test Minecraft anti-cheats, and it's been really easy to bypass them!
+however, we all know that huge servers such as Hypixel have very powerful anti-cheats, but, they all have an exploit...
+
+## external cheats!
+
+most of these anti-cheats focus on a client-checking component, which is easy to bypass just by making an external app.
+
+and so, people can just make a cheat that runs outside the game, and it does all the heavy components such as movement, thinking, and more. and the anti-cheat can't do anything about it!
+(unless you do very unhuman movements)
+
+## how it all works:
+- **the client:** a simple mod that runs on the client sends player coordinates, names, and more data to a port.
+- **the c# app:** the application that does all the heavy lifting, such as movement, thinking, and more. it receives data from the client, and directly does mouse movements, keyboard keys and more.
+
+## processing data in c#
+on the c# side, we communicate with the local api server to grab real-time game data. instead of hooks, we use standard web protocols.
+
+### getting player data
+we can fetch players currently on the screen with their exact coordinates, which is perfect for external overlays or calculation-heavy logic.
+
+```csharp
+var response = await httpClient.GetAsync("/api/players/screen?onScreenOnly=true&maxDistance=50");
+var json = await response.Content.ReadAsStringAsync();
+var data = JsonSerializer.Deserialize<PlayersScreenResponse>(json);
+
+foreach (var player in data.players)
+{
+    if (player.projectionValid && player.onScreen)
+    {
+        Console.WriteLine($"{player.name} at screen ({player.screenX}, {player.screenY})");
+    }
+}
+```
+
+### streaming events
+for high-performance needs, we use server-sent events (sse) to get updates as fast as the game ticks.
+
+```csharp
+var request = new HttpRequestMessage(HttpMethod.Get, "/api/stream/players?intervalMs=16");
+var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+var stream = await response.Content.ReadAsStreamAsync();
+
+using var reader = new StreamReader(stream);
+while (!reader.EndOfStream)
+{
+    var line = await reader.ReadLineAsync();
+    if (line.StartsWith("data: "))
+    {
+        var jsonData = line.Substring(6);
+        // handle real-time position updates
+    }
+}
+```
+
+## conclusion
+at the end of the day, anti-cheats are getting better, but the shift towards external processing makes it a cat-and-mouse game. server owners need to focus not just on client-side checks, but on server-side behavioral analysis to truly catch these "hacking" patterns.
+
+---
+*if you run a network and need someone to handle your security monthly (or just a dev), email me.*
