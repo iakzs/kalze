@@ -64,7 +64,6 @@ const experiences = [
 ];
 
 const total = experiences.length;
-// each slide occupies 1/total of the scroll range
 const slotSize = 1 / total;
 
 function Slide({
@@ -76,11 +75,9 @@ function Slide({
 	index: number;
 	scrollYProgress: MotionValue<number>;
 }) {
-	// the center of this slide's scroll slot
 	const center = (index + 0.5) / total;
 	const half = slotSize * 0.5;
 
-	// fade + move: invisible outside the slot, fully visible at the center
 	const opacity = useTransform(
 		scrollYProgress,
 		[center - half, center - half * 0.3, center + half * 0.3, center + half],
@@ -97,7 +94,6 @@ function Slide({
 		[0.94, 1, 1, 0.94],
 	);
 
-	// animated line fills when the slide is active
 	const lineScale = useTransform(
 		scrollYProgress,
 		[center - half * 0.5, center + half * 0.5],
@@ -110,7 +106,6 @@ function Slide({
 			className="absolute inset-0 flex items-center justify-center px-6 pointer-events-none"
 		>
 			<div className="w-full max-w-lg pointer-events-auto">
-				{/* counter + line */}
 				<div className="flex items-center gap-3 mb-6">
 					<span className="text-[#e8b4d0] font-mono text-xs font-bold uppercase tracking-[0.2em]">
 						{String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
@@ -123,7 +118,6 @@ function Slide({
 					</div>
 				</div>
 
-				{/* icon + date */}
 				<div className="flex items-center gap-4 mb-4">
 					<div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-[#e8b4d0]/10 dark:bg-[#e8b4d0]/5 border border-[#e8b4d0]/30 text-[#e8b4d0] shrink-0">
 						{exp.icon}
@@ -133,17 +127,14 @@ function Slide({
 					</span>
 				</div>
 
-				{/* title */}
 				<h3 className="text-3xl md:text-4xl font-black text-black dark:text-zinc-50 uppercase tracking-tight leading-none mb-3">
 					{exp.title}
 				</h3>
 
-				{/* company */}
 				{exp.company && (
 					<p className="font-mono text-sm text-zinc-500 dark:text-zinc-400 italic mb-4">{exp.company}</p>
 				)}
 
-				{/* description */}
 				<p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed max-w-sm">
 					{exp.description}
 				</p>
@@ -155,20 +146,17 @@ function Slide({
 const Timeline = () => {
 	const containerRef = useRef<HTMLDivElement>(null);
 
-	// track scroll through the whole tall container
 	const { scrollYProgress } = useScroll({
 		target: containerRef,
 		offset: ['start start', 'end end'],
 	});
 
 	return (
-		// tall scroll track — each experience gets ~80vh of scroll travel
 		<div
 			ref={containerRef}
 			className="relative w-full font-mono -mx-6 md:-mx-16"
 			style={{ height: `${total * 80}vh` }}
 		>
-			{/* sticky viewport — stays locked while you scroll through the tall track */}
 			<div className="sticky top-0 h-screen overflow-hidden">
 				{experiences.map((exp, index) => (
 					<Slide key={index} exp={exp} index={index} scrollYProgress={scrollYProgress} />
